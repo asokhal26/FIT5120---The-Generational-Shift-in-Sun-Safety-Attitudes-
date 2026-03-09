@@ -29,7 +29,7 @@ understand UV risks and adopt sun-safe behaviours.
 
 ---
 
-##Features (Onboarding Iteration)
+## Features (Onboarding Iteration)
 - Real-time UV level alerts by location
 - Skin cancer data visualisations
 - Clothing recommendations by UV index
