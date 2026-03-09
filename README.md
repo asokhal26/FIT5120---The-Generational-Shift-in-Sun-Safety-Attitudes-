@@ -54,6 +54,7 @@ understand UV risks and adopt sun-safe behaviours.
 
 ##  Project Structure
 
+```
 FIT5120-Sun-Safety/
 ├── frontend/          ← React app
 │   ├── src/
@@ -77,6 +78,7 @@ FIT5120-Sun-Safety/
 ├── .gitignore
 ├── README.md
 └── docker-compose.yml
+```
 
 ---
 
