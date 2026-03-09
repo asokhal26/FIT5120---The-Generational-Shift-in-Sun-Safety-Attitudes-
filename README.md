@@ -56,71 +56,234 @@ understand UV risks and adopt sun-safe behaviours.
 
 ```
 FIT5120-Sun-Safety/
-├── frontend/                    ← React app
-│   ├── src/
-│   │   ├── components/          ← reusable UI pieces
-│   │   │   ├── UVAlert/
-│   │   │   ├── Charts/
-│   │   │   └── ClothingCard/
-│   │   ├── pages/               ← each screen
-│   │   │   ├── Home/
-│   │   │   ├── UVTracker/
-│   │   │   ├── Awareness/
-│   │   │   └── Prevention/
-│   │   ├── services/            ← API call functions
-│   │   │   ├── uvService.js
-│   │   │   └── dataService.js
-│   │   ├── hooks/               ← custom React hooks
-│   │   ├── context/             ← global state
-│   │   ├── utils/               ← helper functions
-│   │   ├── assets/              ← images, icons
-│   │   └── styles/              ← global CSS
-│   ├── public/
-│   ├── .env.example             ← environment variables template
-│   └── package.json
 │
-├── backend/                     ← Flask app
-│   ├── app/
-│   │   ├── routes/              ← API endpoints
-│   │   │   ├── uv_routes.py
-│   │   │   ├── cancer_routes.py
-│   │   │   └── clothing_routes.py
-│   │   ├── models/              ← database models
-│   │   │   ├── uv_reading.py
-│   │   │   └── cancer_data.py
-│   │   ├── services/            ← business logic
-│   │   │   ├── uv_service.py
-│   │   │   └── clothing_service.py
-│   │   ├── data/                ← AIHW CSV files
-│   │   └── __init__.py
-│   ├── database/
-│   │   ├── migrations/          ← database version control
-│   │   ├── seeds/               ← initial data scripts
-│   │   │   └── import_aihw.py   ← imports CSV to PostgreSQL
-│   │   └── schema.sql           ← table definitions
-│   ├── tests/
-│   │   ├── test_uv_routes.py
-│   │   ├── test_cancer_routes.py
-│   │   └── test_clothing_routes.py
-│   ├── config.py                ← app configuration
-│   ├── requirements.txt         ← Python dependencies
-│   └── run.py                   ← entry point
+├── CLAUDE.md                              ← AI context file
+├── README.md                              ← project overview
+├── .gitignore                             ← git ignore rules
+├── .env.example                           ← environment variables template
+├── docker-compose.yml                     ← local dev environment
+├── docker-compose.prod.yml                ← production Docker config
 │
-├── docs/                        ← project documentation
+├── docs/                                  ← all documentation
 │   ├── analysis-design-report.pdf
 │   ├── tech-stack-decision.md
 │   ├── data-sources.md
+│   ├── security-plan.md                   ← data security plan
+│   ├── data-management-plan.md            ← data management plan
 │   └── diagrams/
-│       └── tech-stack-diagram.png
+│       ├── tech-stack-diagram.png
+│       ├── database-schema.png
+│       └── user-flow.png
 │
 ├── .github/
-│   └── workflows/               ← CI/CD automation
-│       └── deploy.yml
+│   ├── workflows/
+│   │   ├── deploy-frontend.yml            ← auto deploy frontend
+│   │   ├── deploy-backend.yml             ← auto deploy backend
+│   │   └── run-tests.yml                  ← auto run tests
+│   ├── PULL_REQUEST_TEMPLATE.md           ← PR template
+│   └── ISSUE_TEMPLATE/
+│       ├── bug_report.md
+│       └── feature_request.md
 │
-├── .gitignore
-├── .env.example                 ← environment variables template
-├── README.md
-└── docker-compose.yml
+├── frontend/                              ← React app
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── robots.txt                     ← search engine control
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── animations/                    ← Framer Motion configs
+│   │   │   ├── index.js
+│   │   │   ├── fadeIn.js
+│   │   │   ├── slideUp.js
+│   │   │   ├── slideIn.js
+│   │   │   ├── pulse.js                   ← UV alert pulse
+│   │   │   └── stagger.js
+│   │   │
+│   │   ├── assets/
+│   │   │   ├── icons/
+│   │   │   ├── images/
+│   │   │   ├── fonts/
+│   │   │   └── lottie/                    ← Lottie animation files
+│   │   │
+│   │   ├── components/
+│   │   │   ├── index.js                   ← exports all components
+│   │   │   ├── common/
+│   │   │   │   ├── Button/
+│   │   │   │   │   ├── Button.jsx
+│   │   │   │   │   ├── Button.css
+│   │   │   │   │   └── index.js
+│   │   │   │   ├── Card/
+│   │   │   │   │   ├── Card.jsx
+│   │   │   │   │   ├── Card.css
+│   │   │   │   │   └── index.js
+│   │   │   │   ├── Loader/
+│   │   │   │   │   ├── Loader.jsx
+│   │   │   │   │   ├── Loader.css
+│   │   │   │   │   └── index.js
+│   │   │   │   ├── Modal/
+│   │   │   │   │   ├── Modal.jsx
+│   │   │   │   │   ├── Modal.css
+│   │   │   │   │   └── index.js
+│   │   │   │   └── Toast/
+│   │   │   │       ├── Toast.jsx
+│   │   │   │       ├── Toast.css
+│   │   │   │       └── index.js
+│   │   │   ├── Navigation/
+│   │   │   │   ├── Navbar.jsx
+│   │   │   │   ├── Navbar.css
+│   │   │   │   └── index.js
+│   │   │   ├── Footer/
+│   │   │   │   ├── Footer.jsx
+│   │   │   │   ├── Footer.css
+│   │   │   │   └── index.js
+│   │   │   ├── UVAlert/
+│   │   │   │   ├── UVAlert.jsx
+│   │   │   │   ├── UVAlert.css
+│   │   │   │   ├── UVGauge.jsx
+│   │   │   │   └── index.js
+│   │   │   ├── Charts/
+│   │   │   │   ├── CancerTrendChart.jsx
+│   │   │   │   ├── UVTrendChart.jsx
+│   │   │   │   ├── Charts.css
+│   │   │   │   └── index.js
+│   │   │   ├── ClothingCard/
+│   │   │   │   ├── ClothingCard.jsx
+│   │   │   │   ├── ClothingCard.css
+│   │   │   │   └── index.js
+│   │   │   └── Auth/
+│   │   │       ├── LoginForm.jsx
+│   │   │       ├── RegisterForm.jsx
+│   │   │       └── index.js
+│   │   │
+│   │   ├── constants/
+│   │   │   ├── index.js
+│   │   │   ├── uvLevels.js
+│   │   │   ├── clothing.js
+│   │   │   ├── routes.js
+│   │   │   └── api.js
+│   │   │
+│   │   ├── context/
+│   │   │   ├── AuthContext.js
+│   │   │   ├── UVContext.js
+│   │   │   └── ThemeContext.js
+│   │   │
+│   │   ├── hooks/
+│   │   │   ├── useUVData.js
+│   │   │   ├── useLocation.js
+│   │   │   ├── useClothing.js
+│   │   │   ├── useAuth.js
+│   │   │   └── useTheme.js
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Home/
+│   │   │   │   ├── Home.jsx
+│   │   │   │   ├── Home.css
+│   │   │   │   └── index.js
+│   │   │   ├── UVTracker/
+│   │   │   │   ├── UVTracker.jsx
+│   │   │   │   ├── UVTracker.css
+│   │   │   │   └── index.js
+│   │   │   ├── Awareness/
+│   │   │   │   ├── Awareness.jsx
+│   │   │   │   ├── Awareness.css
+│   │   │   │   └── index.js
+│   │   │   ├── Prevention/
+│   │   │   │   ├── Prevention.jsx
+│   │   │   │   ├── Prevention.css
+│   │   │   │   └── index.js
+│   │   │   ├── Login/
+│   │   │   │   ├── Login.jsx
+│   │   │   │   ├── Login.css
+│   │   │   │   └── index.js
+│   │   │   └── NotFound/
+│   │   │       ├── NotFound.jsx
+│   │   │       ├── NotFound.css
+│   │   │       └── index.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── uvService.js
+│   │   │   ├── dataService.js
+│   │   │   ├── authService.js
+│   │   │   └── api.js                     ← axios base config
+│   │   │
+│   │   ├── styles/
+│   │   │   ├── global.css
+│   │   │   ├── variables.css
+│   │   │   ├── animations.css
+│   │   │   └── themes/
+│   │   │       ├── light.css
+│   │   │       └── dark.css
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── uvCalculator.js
+│   │   │   ├── formatters.js
+│   │   │   └── validators.js
+│   │   │
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── index.js
+│   │   └── routes.jsx
+│   │
+│   ├── vercel.json                        ← Vercel deployment config
+│   ├── .env.example
+│   └── package.json
+│
+├── backend/                               ← Flask app
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── uv_routes.py
+│   │   │   ├── cancer_routes.py
+│   │   │   ├── clothing_routes.py
+│   │   │   └── auth_routes.py
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── uv_reading.py
+│   │   │   ├── cancer_data.py
+│   │   │   ├── clothing_rule.py
+│   │   │   └── user.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── uv_service.py
+│   │   │   ├── clothing_service.py
+│   │   │   ├── cancer_service.py
+│   │   │   └── auth_service.py
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   ├── validators.py
+│   │   │   ├── helpers.py
+│   │   │   └── security.py
+│   │   ├── middleware/
+│   │   │   ├── __init__.py
+│   │   │   ├── error_handler.py
+│   │   │   ├── cors.py
+│   │   │   ├── auth_middleware.py         ← JWT token validation
+│   │   │   └── rate_limiter.py            ← API rate limiting
+│   │   └── data/                          ← AIHW CSV files
+│   │
+│   ├── database/
+│   │   ├── migrations/                    ← database version control
+│   │   ├── seeds/
+│   │   │   ├── import_aihw.py
+│   │   │   └── seed_clothing.py
+│   │   └── schema.sql
+│   │
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── conftest.py
+│   │   ├── test_uv_routes.py
+│   │   ├── test_cancer_routes.py
+│   │   ├── test_clothing_routes.py
+│   │   └── test_auth_routes.py
+│   │
+│   ├── Procfile                           ← Render deployment
+│   ├── gunicorn.conf.py                   ← production server
+│   ├── runtime.txt                        ← Python version
+│   ├── config.py
+│   ├── requirements.txt
+│   └── run.py
+│
 ```
 
 ---
