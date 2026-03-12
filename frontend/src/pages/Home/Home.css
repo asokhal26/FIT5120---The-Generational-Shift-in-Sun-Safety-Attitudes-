@@ -1,0 +1,347 @@
+/* ─── Google Fonts ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ─── Root & Reset ──────────────────────────────── */
+.home-root {
+  min-height: 100vh;
+  color: #e8edf5;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.home-root.home-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Background ────────────────────────────────── */
+.home-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Weather-driven gradient — transitions smoothly when condition changes */
+.bg-weather {
+  position: absolute;
+  inset: 0;
+  background: var(--weather-bg, linear-gradient(160deg, #1a6fa8 0%, #2196c4 40%, #56b4e0 100%));
+  transition: background 1.8s ease;
+}
+/* Subtle dark overlay at bottom for readability */
+.bg-weather::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.45) 100%);
+}
+.bg-orb-2 {
+  position: absolute;
+  width: 380px; height: 380px;
+  bottom: -80px; left: -80px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.2);
+  filter: blur(90px);
+  animation: orbFloat 11s ease-in-out infinite reverse;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, -30px) scale(1.06); }
+}
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─── Content wrapper ───────────────────────────── */
+.home-content {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Header ────────────────────────────────────── */
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+.brand-icon {
+  font-size: 1.4rem;
+  filter: drop-shadow(0 0 8px #facc15);
+}
+.header-time {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: 'Syne', sans-serif;
+  letter-spacing: 0.02em;
+  text-align: right;
+  color: rgba(232,237,245,0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.header-date {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: rgba(232,237,245,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ─── Search ────────────────────────────────────── */
+.search-form { width: 100%; }
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 0 6px 0 16px;
+  gap: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  backdrop-filter: blur(8px);
+}
+.search-wrapper:focus-within {
+  border-color: rgba(255,255,255,0.25);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+}
+.search-icon {
+  font-size: 1.2rem;
+  color: rgba(232,237,245,0.35);
+  flex-shrink: 0;
+}
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #e8edf5;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  padding: 14px 0;
+}
+.search-input::placeholder { color: rgba(232,237,245,0.3); }
+.search-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 10px;
+  color: #e8edf5;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-btn:hover { background: rgba(255,255,255,0.18); }
+.search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── UV Card ───────────────────────────────────── */
+.uv-card {
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 28px 24px 24px;
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.8s ease, border-color 0.8s ease;
+}
+
+/* Location */
+.card-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: rgba(232,237,245,0.6);
+  font-weight: 500;
+}
+.location-pin { font-size: 1rem; }
+
+/* UV Display — big number style */
+.uv-display {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.uv-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.uv-number {
+  font-family: 'Syne', sans-serif;
+  font-size: 6rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.25);
+}
+.uv-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.uv-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+.uv-sublabel {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Scale bar */
+.uv-scale {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.scale-seg {
+  flex: 1;
+  border-radius: 99px;
+  opacity: 0.35;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.scale-seg-active {
+  opacity: 1;
+  transform: scaleY(1.4);
+}
+
+/* Advice banner — simple text row inside the colored card */
+.advice-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #ffffff;
+  font-weight: 500;
+}
+.advice-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* Weather stats */
+.weather-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.stat {
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.stat-icon { font-size: 1.1rem; }
+.stat-value {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.stat-label {
+  font-size: 0.68rem;
+  color: rgba(232,237,245,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.card-condition {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(232,237,245,0.4);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Quick nav ─────────────────────────────────── */
+.quick-nav {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(232,237,245,0.8);
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  backdrop-filter: blur(8px);
+}
+.nav-pill:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+  color: #e8edf5;
+}
+
+/* ─── Footer ────────────────────────────────────── */
+.home-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(232,237,245,0.25);
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Responsive ────────────────────────────────── */
+@media (max-width: 360px) {
+  .weather-stats { grid-template-columns: repeat(2, 1fr); }
+  .uv-number { font-size: 3rem; }
+}
