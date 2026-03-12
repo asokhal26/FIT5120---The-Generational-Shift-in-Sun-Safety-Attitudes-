@@ -32,7 +32,7 @@ def create_app():
     app,
     resources={r"/api/*": {"origins": [
         "http://localhost:5173",
-        "https://fit-5120-the-generational-shift-in.vercel.app/"
+        "https://fit-5120-the-generational-shift-in.vercel.app"
     ]}}
 )
     jwt.init_app(app)
