@@ -1,6 +1,5 @@
 // pages/Home/Home.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Navbar from '../../components/Navigation/Navbar';
 import UVAlert, { getUVLevel } from '../../components/UVAlert/UVAlert';
 import UVGauge from '../../components/UVAlert/UVGauge';
 import './Home.css';
@@ -558,7 +557,7 @@ export default function Home() {
         </div>
       )}
 
-      <Navbar />
+      
     </div>
   );
 }
