@@ -1,0 +1,64 @@
+.uv-alert {
+  border-radius: 12px;
+  padding: 1.25rem;
+  color: #1a202c;
+  transition: box-shadow 0.2s ease;
+}
+
+.uv-alert:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Colour variants ── */
+
+.uv-alert--low {
+  background: #c6f6d5;
+  border: 1px solid #68d391;
+}
+
+.uv-alert--moderate {
+  background: #fefcbf;
+  border: 1px solid #ecc94b;
+}
+
+.uv-alert--high {
+  background: #feebc8;
+  border: 1px solid #ed8936;
+}
+
+.uv-alert--very-high {
+  background: #fed7d7;
+  border: 1px solid #fc8181;
+}
+
+.uv-alert--extreme {
+  background: #feb2b2;
+  border: 1px solid #c53030;
+  color: #742a2a;
+}
+
+/* ── Layout ── */
+
+.uv-alert__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.uv-alert__index {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.uv-alert__level {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.uv-alert__message {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
