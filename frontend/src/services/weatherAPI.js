@@ -36,7 +36,7 @@ export async function fetchWeather(lat, lon) {
 
   //
   const forecastRes = await fetch(
-    `${BASE}/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&cnt=7&appid=${API_KEY}`
+    `${BASE}/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&cnt=12&appid=${API_KEY}`
   );
   const forecast = await forecastRes.json();
 

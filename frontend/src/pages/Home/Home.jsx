@@ -18,31 +18,52 @@ import { geocode, fetchWeather } from '../../services/weatherAPI';
 ];
 */
 
-const TIPS = {
-  low: [
-    { emoji: '😎', title: 'Minimal protection needed',  body: 'No sunscreen required for short outdoor activities today.' },
-    { emoji: '🚶', title: 'Great day to be outside',    body: 'UV levels are safe — enjoy your outdoor activities freely.' },
-  ],
-  moderate: [
-    { emoji: '🧴', title: 'Apply SPF 30+ Sunscreen',    body: 'Apply before heading out, especially for stays over 30 min.' },
-    { emoji: '🧢', title: 'Wear a Hat',                 body: 'A broad-brimmed hat protects your face, neck and ears.' },
-  ],
-  high: [
-    { emoji: '🧴', title: 'SPF 50+ is essential',       body: 'Apply generously and reapply every 2 hours outdoors.' },
-    { emoji: '🏠', title: 'Seek shade midday',           body: 'Stay out of direct sun between 11am–3pm when UV peaks.' },
-    { emoji: '🕶', title: 'Protect your eyes',           body: 'Wear UV-rated sunglasses to prevent eye damage.' },
-  ],
-  veryHigh: [
-    { emoji: '🧴', title: 'Apply SPF 50+ Sunscreen',    body: 'Reapply every 2 hours, especially after swimming or sweating.' },
-    { emoji: '🕶', title: 'Wear Sunglasses & a Hat',    body: 'UV-blocking sunglasses and a broad-brimmed hat are essential.' },
-    { emoji: '🏠', title: 'Seek Shade 10am–3pm',        body: 'UV is at its peak. Avoid prolonged outdoor exposure.' },
-  ],
-  extreme: [
-    { emoji: '🏠', title: 'Stay indoors if possible',   body: 'Avoid all non-essential outdoor activity during peak hours.' },
-    { emoji: '🧴', title: 'Full coverage required',     body: 'SPF 50+, long sleeves, hat and UV sunglasses — no exceptions.' },
-    { emoji: '💧', title: 'Stay hydrated',              body: 'Heat and UV together accelerate dehydration. Drink water regularly.' },
-  ],
-};
+function generateTips(uvIndex, temperature, condition) {
+  const tips = [];
+  const cond = (condition || '').toLowerCase();
+
+  // ── UV tips ──────────────────────────
+  if (uvIndex <= 2) {
+    tips.push({ emoji: '😎', title: 'UV is Low Today', body: 'Minimal sun protection needed. Enjoy your time outside!' });
+  } else if (uvIndex <= 5) {
+    tips.push({ emoji: '🧴', title: 'Apply SPF 30+ Sunscreen', body: 'UV is moderate — apply sunscreen before heading out, especially for stays over 30 minutes.' });
+    tips.push({ emoji: '🧢', title: 'Wear a Hat', body: 'A broad-brimmed hat protects your face, neck and ears from UV exposure.' });
+  } else if (uvIndex <= 7) {
+    tips.push({ emoji: '🧴', title: 'SPF 50+ is Essential', body: 'Apply generously 20 minutes before going outside and reapply every 2 hours.' });
+    tips.push({ emoji: '🏠', title: 'Seek Shade 11am–3pm', body: 'UV peaks at midday. Stay in the shade or indoors during these hours.' });
+    tips.push({ emoji: '🕶', title: 'Protect Your Eyes', body: 'Wear UV-rated sunglasses to prevent long-term eye damage.' });
+  } else if (uvIndex <= 10) {
+    tips.push({ emoji: '🚨', title: 'Very High UV — Act Now', body: 'Unprotected skin can burn in around 10 minutes. Apply SPF 50+ immediately.' });
+    tips.push({ emoji: '👕', title: 'Cover Up', body: 'Wear long sleeves and UV-protective clothing if you must go outside.' });
+    tips.push({ emoji: '🏠', title: 'Avoid Peak Sun Hours', body: 'Stay indoors between 10am–3pm when UV is at its most dangerous.' });
+  } else {
+    tips.push({ emoji: '☠️', title: 'Extreme UV — Stay Indoors', body: 'Skin can burn in under 5 minutes. Avoid all outdoor activity if possible.' });
+    tips.push({ emoji: '🧴', title: 'Full Protection Required', body: 'SPF 50+, long sleeves, hat, and UV sunglasses are all non-negotiable.' });
+    tips.push({ emoji: '💧', title: 'Stay Hydrated', body: 'Extreme UV combined with heat accelerates dehydration. Drink water regularly.' });
+  }
+
+  // ── Temperature tips ─────────────────
+  if (temperature >= 35) {
+    tips.push({ emoji: '🌡', title: 'Extreme Heat Warning', body: 'Temperature is above 35°C. Risk of heat stroke is high — stay cool and hydrated.' });
+  } else if (temperature >= 28) {
+    tips.push({ emoji: '💧', title: 'Stay Hydrated', body: `It's ${temperature}°C outside. Drink at least 2L of water today, more if you're active.` });
+  } else if (temperature <= 10) {
+    tips.push({ emoji: '🧥', title: 'Cold but UV Still Present', body: 'Cold weather doesn\'t mean no UV. Snow and overcast skies can still reflect UV rays.' });
+  }
+
+  // ── Weather conditio tips ───────────
+  if (cond.includes('rain') || cond.includes('drizzle')) {
+    tips.push({ emoji: '☂️', title: 'Rain Doesn\'t Block UV', body: 'Light cloud and rain still let through significant UV. Keep your sunscreen on.' });
+  } else if (cond.includes('snow')) {
+    tips.push({ emoji: '❄️', title: 'Snow Reflects UV', body: 'Snow can reflect up to 80% of UV rays. Eye and skin protection is still important.' });
+  } else if (cond.includes('cloud') || cond.includes('overcast')) {
+    tips.push({ emoji: '⛅', title: 'Clouds Don\'t Stop UV', body: 'Up to 80% of UV rays pass through clouds. Don\'t skip sunscreen on overcast days.' });
+  } else if (cond.includes('clear') || cond.includes('sunny')) {
+    tips.push({ emoji: '☀️', title: 'Clear Sky = Full UV Exposure', body: 'No clouds means maximum UV. Make sure you\'re fully protected before heading out.' });
+  }
+
+  return tips.slice(0, 4); // most 4 list
+}
 
 function uvCircleStyle(uv) {
   if (uv <= 2)  return { background: 'rgba(74,222,128,0.28)',  border: '1.5px solid #4ade80' };
@@ -316,7 +337,18 @@ export default function Home() {
         setScreen('manual');
       }
     },
-    () => setScreen('manual'),
+    async (_err) => {
+      // 备用：用 IP 定位
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const ip = await res.json();
+        const data = await fetchWeather(ip.latitude, ip.longitude);
+        setWeather({ ...data, location: ip.city });
+        setScreen('data');
+      } catch {
+        setScreen('manual');
+      }
+    },
     { timeout: 8000 }
   );
 };
@@ -351,7 +383,7 @@ export default function Home() {
   };
 
   const uvLevel  = weather ? getUVLevel(weather.uvIndex) : null;
-  const tips     = uvLevel ? TIPS[uvLevel.key] : [];
+  const tips = weather ? generateTips(weather.uvIndex, weather.temperature, weather.condition) : [];
 
   return (
     <div className={`home-root ${revealed ? 'home-root--revealed' : ''}`}>
