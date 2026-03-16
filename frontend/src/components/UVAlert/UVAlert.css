@@ -1,69 +1,66 @@
-<<<<<<< HEAD
-.uv-alert {
-  border-radius: 12px;
-  padding: 1.25rem;
-  color: #1a202c;
-  transition: box-shadow 0.2s ease;
-}
+// components/UVAlert/UVAlert.css
 
-.uv-alert:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* ── Colour variants ── */
-
-.uv-alert--low {
-  background: #c6f6d5;
-  border: 1px solid #68d391;
-}
-
-.uv-alert--moderate {
-  background: #fefcbf;
-  border: 1px solid #ecc94b;
-}
-
-.uv-alert--high {
-  background: #feebc8;
-  border: 1px solid #ed8936;
-}
-
-.uv-alert--very-high {
-  background: #fed7d7;
-  border: 1px solid #fc8181;
-}
-
-.uv-alert--extreme {
-  background: #feb2b2;
-  border: 1px solid #c53030;
-  color: #742a2a;
-}
-
-/* ── Layout ── */
-
-.uv-alert__header {
+/* ── UV Gauge ─────────────────────────────── */
+.uv-gauge {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 3px;
+  height: 5px;
+  width: 100%;
 }
 
-.uv-alert__index {
-  font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1;
+.gauge-seg {
+  flex: 1;
+  border-radius: 99px;
+  opacity: 0.28;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.uv-alert__level {
-  font-size: 1.125rem;
-  font-weight: 600;
+.gauge-seg--active {
+  opacity: 1;
+  transform: scaleY(1.5);
+  transform-origin: center;
+}
+
+/* ── UV Alert Banner ──────────────────────── */
+.uv-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.uv-alert__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.uv-alert__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.uv-alert__burn-time {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  display: block;
+  color: #fff;
 }
 
 .uv-alert__message {
-  margin: 0;
-  font-size: 0.9375rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.92);
   line-height: 1.5;
 }
-=======
+>>>>>>> jasmine-homepage
 /* components/UVAlert/UVAlert.css */
 
 /* ── UV Gauge ─────────────────────────────── */
