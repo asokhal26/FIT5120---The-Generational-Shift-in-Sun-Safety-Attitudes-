@@ -1,8 +1,3 @@
-"""
-FIT5120 Sun Safety App
-Flask application factory
-"""
-
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -18,20 +13,27 @@ jwt = JWTManager()
 
 
 def create_app():
-    """Create and configure the Flask application."""
     app = Flask(__name__)
 
-    # Config
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev-jwt-key")
     app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
 
-    # Extensions
-    CORS(app, origins=os.getenv("FRONTEND_URL", "http://localhost:5173"))
+    CORS(
+        app,
+        resources={
+            r"/api/*": {
+                "origins": [
+                    "http://localhost:5173",
+                    "https://fit-5120-the-generational-shift-in.vercel.app"
+                ]
+            }
+        }
+    )
+
     jwt.init_app(app)
     limiter.init_app(app)
 
-    # Register blueprints
     from app.routes.uv_routes import uv_bp
     from app.routes.cancer_routes import cancer_bp
     from app.routes.clothing_routes import clothing_bp
@@ -44,7 +46,6 @@ def create_app():
 
     @app.route("/api/health")
     def health():
-        """Health check endpoint."""
         return {"status": "ok", "message": "Sun Safety API is running"}
 
     return app
