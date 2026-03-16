@@ -4,9 +4,10 @@ import UVAlert, { getUVLevel } from '../../components/UVAlert/UVAlert';
 import UVGauge from '../../components/UVAlert/UVGauge';
 import './Home.css';
 import '../../components/UVAlert/UVAlert.css';
+import { geocode, fetchWeather } from '../../services/weatherAPI';
 
 // ── UV level config ───────────────────────────────────────────
-const HOURLY_MOCK = [
+/*const HOURLY_MOCK = [
   { time: '8 AM',  uv: 3,  temp: 22, icon: '🌤' },
   { time: '10 AM', uv: 6,  temp: 25, icon: '☀️' },
   { time: 'Now',   uv: 8,  temp: 27, icon: '☀️', now: true },
@@ -15,6 +16,7 @@ const HOURLY_MOCK = [
   { time: '6 PM',  uv: 2,  temp: 22, icon: '🌅' },
   { time: '8 PM',  uv: 0,  temp: 18, icon: '🌙' },
 ];
+*/
 
 const TIPS = {
   low: [
@@ -299,47 +301,44 @@ export default function Home() {
 
   // AC1 — Request geolocation
   const requestLocation = () => {
-    if (!navigator.geolocation) {
-      setScreen('manual');
-      return;
-    }
-    setScreen('loading');
-    navigator.geolocation.getCurrentPosition(
-      (_pos) => {
-        // TODO: replace with real API call using pos.coords.latitude / longitude
-        setTimeout(() => {
-          setWeather({ ...MOCK_WEATHER, lastUpdated: new Date() });
-          setStale(false);
-          setScreen('data');
-        }, 1200);
-      },
-      (_err) => {
+  if (!navigator.geolocation) {
+    setScreen('manual');
+    return;
+  }
+  setScreen('loading');
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const data = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
+        setWeather({ ...data, location: 'Current Location' });
+        setScreen('data');
+      } catch {
         setScreen('manual');
-      },
-      { timeout: 8000 }
-    );
-  };
+      }
+    },
+    () => setScreen('manual'),
+    { timeout: 8000 }
+  );
+};
 
   // AC1 — Manual suburb / postcode search
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const q = query.trim();
-    if (!q) return;
-    setInputError('');
-    setScreen('loading');
-    // TODO: replace with real geocoding + UV API call
-    setTimeout(() => {
-      const isValid = /^[a-zA-Z\s]{3,}$|^\d{4}$/.test(q);
-      if (!isValid) {
-        setScreen('error');
-        setInputError('Location not recognised. Please try a valid suburb or postcode.');
-        return;
-      }
-      setWeather({ ...MOCK_WEATHER, location: q, lastUpdated: new Date() });
-      setStale(false);
-      setScreen('data');
-    }, 1000);
-  };
+  const handleSearch = async (e) => {
+  e.preventDefault();
+  const q = query.trim();
+  if (!q) return;
+  setInputError('');
+  setScreen('loading');
+  try {
+    const { lat, lon, name } = await geocode(q);
+    const data = await fetchWeather(lat, lon);
+    setWeather({ ...data, location: name });
+    setStale(false);
+    setScreen('data');
+  } catch {
+    setScreen('error');
+    setInputError('Location not recognised. Please try a valid suburb or postcode.');
+  }
+};
 
   // AC2 — Refresh
   const handleRefresh = () => {
@@ -520,7 +519,7 @@ export default function Home() {
             {/* Hourly forecast */}
             <p className="section-label">Hourly Forecast</p>
             <div className="hourly-strip">
-              {HOURLY_MOCK.map((h, i) => (
+              {(weather.hourly || []).map((h, i) => (
                 <div key={i} className={`hour-card ${h.now ? 'hour-card--now' : ''}`}>
                   <span className="hour-card__time">{h.time}</span>
                   <div className="hour-card__circle" style={uvCircleStyle(h.uv)}>{h.uv}</div>
