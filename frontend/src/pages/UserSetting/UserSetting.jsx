@@ -1,3 +1,4 @@
+// pages/UserSetting/UserSetting.jsx
 import { useState } from 'react';
 import './UserSetting.css';
 
@@ -11,41 +12,39 @@ export default function UserSetting() {
 
   const handleSave = () => {
     setSaved(true);
-
-    const settings = {
-      name,
-      location,
-      temperatureUnit,
-      uvNotification,
-      darkMode,
-    };
-
-    localStorage.setItem('userSettings', JSON.stringify(settings));
-
+    localStorage.setItem('userSettings', JSON.stringify({
+      name, location, temperatureUnit, uvNotification, darkMode,
+    }));
     setTimeout(() => setSaved(false), 2000);
   };
 
   return (
     <div className="setting-root">
-      <div className="setting-card">
+      <div className="setting-scroll">
+
+        {/* ── Header ── */}
         <div className="setting-header">
-          <h1 className="setting-title">User Settings</h1>
-          <p className="setting-subtitle">
-            Manage your personal preferences for UVGuard.
-          </p>
+          <span className="setting-page-label">Preferences</span>
+          <h1 className="setting-title">Settings</h1>
+          <p className="setting-subtitle">Manage your personal preferences for UVGuard.</p>
         </div>
 
-        <div className="setting-section">
-          <label className="setting-label">User Name</label>
+        {/* ── Profile ── */}
+        <p className="setting-section-label">Profile</p>
+        <div className="setting-field">
+          <label className="setting-label">Display Name</label>
           <input
             className="setting-input"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
           />
         </div>
 
-        <div className="setting-section">
+        {/* ── Location ── */}
+        <p className="setting-section-label">Location</p>
+        <div className="setting-field">
           <label className="setting-label">Location Preference</label>
           <select
             className="setting-input"
@@ -57,7 +56,9 @@ export default function UserSetting() {
           </select>
         </div>
 
-        <div className="setting-section">
+        {/* ── Units ── */}
+        <p className="setting-section-label">Units</p>
+        <div className="setting-field">
           <label className="setting-label">Temperature Unit</label>
           <select
             className="setting-input"
@@ -69,39 +70,53 @@ export default function UserSetting() {
           </select>
         </div>
 
+        {/* ── Notifications ── */}
+        <p className="setting-section-label">Notifications</p>
         <div className="setting-toggle">
-          <div>
+          <div className="toggle-text">
             <p className="toggle-title">UV Alert Notifications</p>
-            <p className="toggle-desc">
-              Receive reminders when UV levels become dangerous.
-            </p>
+            <p className="toggle-desc">Get reminders when UV levels become dangerous.</p>
           </div>
-          <input
-            type="checkbox"
-            checked={uvNotification}
-            onChange={() => setUvNotification(!uvNotification)}
-          />
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={uvNotification}
+              onChange={() => setUvNotification(!uvNotification)}
+            />
+            <span className="toggle-slider" />
+          </label>
         </div>
 
+        {/* ── Display ── */}
+        <p className="setting-section-label">Display</p>
         <div className="setting-toggle">
-          <div>
+          <div className="toggle-text">
             <p className="toggle-title">Dark Mode</p>
-            <p className="toggle-desc">
-              Use a darker interface for a more comfortable viewing experience.
-            </p>
+            <p className="toggle-desc">Use a darker interface for comfortable viewing.</p>
           </div>
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={() => setDarkMode(!darkMode)}
-          />
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={darkMode}
+              onChange={() => setDarkMode(!darkMode)}
+            />
+            <span className="toggle-slider" />
+          </label>
         </div>
 
+        {/* ── Save ── */}
         <button className="setting-btn" onClick={handleSave}>
           Save Settings
         </button>
 
-        {saved && <p className="setting-success">Settings saved successfully.</p>}
+        {saved && (
+          <div className="setting-success">
+            <span>✓</span> Settings saved successfully.
+          </div>
+        )}
+
+        <p className="setting-footer">UVGuard · Your data stays on your device</p>
+
       </div>
     </div>
   );
