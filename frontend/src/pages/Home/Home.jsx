@@ -1,10 +1,12 @@
 // pages/Home/Home.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useWeather } from '../../context/UVContext';
 import UVAlert, { getUVLevel } from '../../components/UVAlert/UVAlert';
 import UVGauge from '../../components/UVAlert/UVGauge';
 import './Home.css';
 import '../../components/UVAlert/UVAlert.css';
 import { geocode, fetchWeather } from '../../services/weatherAPI';
+import { useNavigate } from 'react-router-dom';
 
 // ── UV level config ───────────────────────────────────────────
 /*const HOURLY_MOCK = [
@@ -286,12 +288,13 @@ const MOCK_WEATHER = {
 export default function Home() {
   // Screen state: 'permission' | 'manual' | 'loading' | 'data' | 'error'
   const [screen, setScreen]     = useState('permission');
-  const [weather, setWeather]   = useState(null);
+  const { weather, setWeather } = useWeather();
   const [query, setQuery]       = useState('');
   const [inputError, setInputError] = useState('');
   const [time, setTime]         = useState(new Date());
   const [revealed, setRevealed] = useState(false);
   const [stale, setStale]       = useState(false);
+  const navigate = useNavigate();
 
   const canvasRef = useRef(null);
   const weatherMode = weather ? getWeatherMode(weather.condition) : 'neutral';
@@ -338,7 +341,7 @@ export default function Home() {
       }
     },
     async (_err) => {
-      // 备用：用 IP 定位
+      // IP location
       try {
         const res = await fetch('https://ipapi.co/json/');
         const ip = await res.json();
@@ -454,11 +457,19 @@ export default function Home() {
                 <span className="brand-icon">☀</span>
                 <span className="brand-name">UVGuard</span>
               </div>
-              <div className="header-time">
-                {time.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}
-                <span className="header-date">
-                  {time.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="header-time">
+                  {time.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}
+                  <span className="header-date">
+                    {time.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate('/settings')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem', padding: '4px' }}
+                >
+                   ⚙️
+                </button>
               </div>
             </header>
 

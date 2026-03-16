@@ -1,0 +1,134 @@
+.recommend-root {
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .recommend-card {
+    width: 100%;
+    max-width: 760px;
+    background: rgba(12, 18, 32, 0.72);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    padding: 28px;
+    color: #f8fafc;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  }
+  
+  .recommend-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  
+  .recommend-title {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  
+  .recommend-subtitle {
+    margin: 0;
+    color: rgba(241, 245, 249, 0.78);
+    line-height: 1.5;
+  }
+  
+  .recommend-location {
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  
+  .recommend-uv-card {
+    border-radius: 22px;
+    padding: 22px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    color: #0f172a;
+  }
+  
+  .recommend-uv-card.low {
+    background: rgba(74, 222, 128, 0.9);
+  }
+  
+  .recommend-uv-card.moderate {
+    background: rgba(250, 204, 21, 0.9);
+  }
+  
+  .recommend-uv-card.high {
+    background: rgba(251, 146, 60, 0.9);
+  }
+  
+  .recommend-uv-card.very-high {
+    background: rgba(248, 113, 113, 0.9);
+  }
+  
+  .recommend-uv-card.extreme {
+    background: rgba(192, 132, 252, 0.9);
+  }
+  
+  .recommend-uv-card p {
+    margin: 0 0 8px;
+    line-height: 1.5;
+  }
+  
+  .recommend-section {
+    margin-bottom: 18px;
+    padding: 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .recommend-section h2 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    color: #ffffff;
+  }
+  
+  .recommend-section p {
+    margin: 0;
+    color: rgba(241, 245, 249, 0.88);
+    line-height: 1.6;
+  }
+  
+  .recommend-soft {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  
+  .recommend-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #f8fafc;
+    line-height: 1.9;
+  }
+  
+  .recommend-footer {
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(226, 232, 240, 0.7);
+  }
+  
+  .recommend-btn {
+    margin-top: 16px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 14px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  
+  .recommend-btn:hover {
+    background: #1d4ed8;
+  }
