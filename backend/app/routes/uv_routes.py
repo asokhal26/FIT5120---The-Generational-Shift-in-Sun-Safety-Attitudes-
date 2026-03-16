@@ -93,68 +93,69 @@ def get_uv_forecast():
     if not api_key:
         return jsonify({"error": "Missing OPENWEATHER_API_KEY in backend/.env"}), 500
     
-    lat = request.args.get('lat', str(MELBOURNE_LAT))
-    lon = request.args.get('lon', str(MELBOURNE_LON))
-    
+    lat = request.args.get("lat", str(MELBOURNE_LAT))
+    lon = request.args.get("lon", str(MELBOURNE_LON))
+
     try:
-        # Call 1: Current UV index
+        # Current UV (OpenWeather UVI endpoint) -- UVI is treated as “current now”
         uvi_url = f"https://api.openweathermap.org/data/2.5/uvi?lat={lat}&lon={lon}&appid={api_key}"
-        uvi_response = requests.get(uvi_url, timeout=15)
-        uvi_response.raise_for_status()
-        uvi_data = uvi_response.json()
-        current_uv = uvi_data.get('value', 0)
-        
-        # Call 2: Weather forecast
-        forecast_url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&units=metric&cnt=8&appid={api_key}"
-        forecast_response = requests.get(forecast_url, timeout=15)
-        forecast_response.raise_for_status()
-        forecast_data = forecast_response.json()
-        forecast_list = forecast_data.get('list', [])
-        
-        hourly_data = []
-        
+        uvi_resp = requests.get(uvi_url, timeout=15)
+        uvi_resp.raise_for_status()
+        uvi_data = uvi_resp.json()
+        current_uv = uvi_data.get("value", 0)
+
+        # Forecast data (weather) -- we will use this for temp + condition + forecast slots
+        forecast_url = (
+            f"https://api.openweathermap.org/data/2.5/forecast"
+            f"?lat={lat}&lon={lon}&units=metric&cnt=8&appid={api_key}"
+        )
+        forecast_resp = requests.get(forecast_url, timeout=15)
+        forecast_resp.raise_for_status()
+        forecast_data = forecast_resp.json()
+        forecast_list = forecast_data.get("list", [])
+
+        # Build the response
+        now_melbourne = datetime.now(MELBOURNE_TZ)
+        current_time_iso = now_melbourne.isoformat()
+
+        current_temp = None
+        current_weather = None
         if forecast_list:
-            # First entry: real UV + weather from first forecast
             first = forecast_list[0]
-            uv = current_uv
-            details = uv_details(uv)
-            timestamp = datetime.fromtimestamp(first['dt'], MELBOURNE_TZ)
-            
-            hourly_data.append({
-                "time": timestamp.strftime("%I:%M %p"),
-                "temp": first['main']['temp'],
-                "uv": uv,
-                "uv_estimated": False,
-                "level": details["level"],
-                "color": details["color"],
-                "warning_sign": details["warning_sign"],
-                "warning_message": details["warning_message"],
-                "clothing": details["recommended_clothing"],
-                "weather": first['weather'][0]['description']
-            })
-            
-            # Remaining entries: forecast weather only, UV unavailable
-            for f in forecast_list[1:]:
-                timestamp = datetime.fromtimestamp(f['dt'], MELBOURNE_TZ)
-                hourly_data.append({
-                    "time": timestamp.strftime("%I:%M %p"),
-                    "temp": f['main']['temp'],
-                    "uv": None,
-                    "uv_estimated": True,
-                    "level": None,
-                    "color": None,
-                    "warning_sign": None,
-                    "warning_message": None,
-                    "clothing": None,
-                    "weather": f['weather'][0]['description']
-                })
-        
+            current_temp = first.get("main", {}).get("temp")
+            current_weather = first.get("weather", [{}])[0].get("description")
+
+        current_details = uv_details(current_uv)
+
+        current = {
+            "time": current_time_iso,
+            "uv": current_uv,
+            "uv_estimated": False,
+            "level": current_details["level"],
+            "color": current_details["color"],
+            "warning_sign": current_details["warning_sign"],
+            "warning_message": current_details["warning_message"],
+            "clothing": current_details["recommended_clothing"],
+            "weather": current_weather,
+            "temp": current_temp,
+        }
+
+        forecast = [
+            {
+                "time": datetime.fromtimestamp(f["dt"], MELBOURNE_TZ).strftime("%I:%M %p"),
+                "temp": f.get("main", {}).get("temp"),
+                "weather": f.get("weather", [{}])[0].get("description"),
+            }
+            for f in forecast_list
+        ]
+
         return jsonify({
             "city": forecast_data.get("city", {}).get("name", "Melbourne"),
             "timezone": "Australia/Melbourne",
-            "uv_forecast": hourly_data
+            "current": current,
+            "forecast": forecast,
         })
-    
+
     except requests.RequestException as e:
         return jsonify({"error": "External API request failed", "details": str(e)}), 502
     except Exception as e:
