@@ -1,178 +1,161 @@
-"""
-UV index routes.
-
-Provides endpoints for retrieving real-time UV index data
-from OpenWeatherMap and caching results in the database.
-"""
-
-from flask import Blueprint, request, jsonify, current_app
-import psycopg2
+from flask import Blueprint, jsonify, request
+import os
 import requests
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 uv_bp = Blueprint("uv", __name__)
 
-# UV category thresholds and messages
-UV_CATEGORIES = [
-    {
-        "min": 0,
-        "max": 2,
-        "level": "Low",
-        "message": "Low UV — minimal risk. You can safely enjoy the outdoors.",
-    },
-    {
-        "min": 3,
-        "max": 5,
-        "level": "Moderate",
-        "message": "Moderate UV — wear sunscreen and sunglasses if outdoors for extended periods.",
-    },
-    {
-        "min": 6,
-        "max": 7,
-        "level": "High",
-        "message": "High UV — protect your skin. Wear a hat, sunscreen, and seek shade during midday.",
-    },
-    {
-        "min": 8,
-        "max": 10,
-        "level": "Very High",
-        "message": "Very high UV — your skin can burn in under 15 minutes. Seek shade and cover up.",
-    },
-    {
-        "min": 11,
-        "max": 99,
-        "level": "Extreme",
-        "message": "Extreme UV — avoid outdoor exposure. Full protection is essential.",
-    },
-]
+MELBOURNE_LAT = -37.8136
+MELBOURNE_LON = 144.9631
+MELBOURNE_TZ = ZoneInfo("Australia/Melbourne")
 
 
-def _get_db_connection():
-    """Create a database connection using DATABASE_URL from app config.
+def uv_details(uv):
+    if uv <= 2:
+        return {
+            "level": "Low",
+            "color": "green",
+            "warning_sign": "☀️",
+            "warning_message": "Minimal danger from sun exposure",
+            "recommended_clothing": [
+                "T-shirt",
+                "Shorts",
+                "Cap optional",
+                "Sunglasses optional"
+            ]
+        }
+    elif uv <= 5:
+        return {
+            "level": "Moderate",
+            "color": "yellow",
+            "warning_sign": "🧴",
+            "warning_message": "Protection needed if outside for long",
+            "recommended_clothing": [
+                "T-shirt",
+                "Hat or cap",
+                "Sunglasses",
+                "Breathable clothes",
+                "Sunscreen"
+            ]
+        }
+    elif uv <= 7:
+        return {
+            "level": "High",
+            "color": "orange",
+            "warning_sign": "⚠️",
+            "warning_message": "Skin can burn without protection",
+            "recommended_clothing": [
+                "Long-sleeve shirt",
+                "Wide-brim hat",
+                "UV sunglasses",
+                "Covered shoulders",
+                "SPF50+ sunscreen"
+            ]
+        }
+    elif uv <= 10:
+        return {
+            "level": "Very High",
+            "color": "red",
+            "warning_sign": "🧢",
+            "warning_message": "Very high danger. Skin damage can happen quickly",
+            "recommended_clothing": [
+                "Long sleeves",
+                "Collared shirt",
+                "Wide-brim hat",
+                "Sunglasses",
+                "More skin coverage",
+                "SPF50+ sunscreen"
+            ]
+        }
+    else:
+        return {
+            "level": "Extreme",
+            "color": "purple",
+            "warning_sign": "🚫",
+            "warning_message": "Extreme UV. Avoid direct sun if possible",
+            "recommended_clothing": [
+                "Full-coverage clothing",
+                "Long sleeves",
+                "Long pants",
+                "Wide-brim hat",
+                "UV sunglasses",
+                "SPF50+ sunscreen",
+                "Stay in shade"
+            ]
+        }
 
-    Returns:
-        psycopg2.connection: A PostgreSQL database connection.
-    """
-    return psycopg2.connect(current_app.config["DATABASE_URL"])
 
-
-def _get_uv_category(uv_index):
-    """Return the UV category dict for a given UV index value.
-
-    Args:
-        uv_index (float): The UV index number.
-
-    Returns:
-        dict: Contains 'level' and 'message' keys for the matching category.
-    """
-    for category in UV_CATEGORIES:
-        if category["min"] <= uv_index <= category["max"]:
-            return category
-    return UV_CATEGORIES[-1]
-
-
-def _cache_uv_reading(conn, lat, lon, location_name, uv_index):
-    """Insert a UV reading into the uv_realtime_cache table.
-
-    Args:
-        conn: psycopg2 database connection.
-        lat (float): Latitude of the reading.
-        lon (float): Longitude of the reading.
-        location_name (str): Human-readable location name.
-        uv_index (float): The UV index value.
-    """
-    cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT INTO uv_realtime_cache (lat, lon, location_name, uv_index, recorded_at)
-        VALUES (%s, %s, %s, %s, %s)
-        """,
-        (lat, lon, location_name, uv_index, datetime.now(timezone.utc)),
-    )
-    conn.commit()
-    cur.close()
-
-
-@uv_bp.route("/")
-def get_uv():
-    """Get real-time UV index for a given latitude and longitude.
-
-    Calls the OpenWeatherMap One Call API 3.0 to retrieve the current
-    UV index, caches the result in the uv_realtime_cache table, and
-    returns the UV index with a plain-language risk message.
-
-    Query Parameters:
-        lat (float): Latitude. Required.
-        lon (float): Longitude. Required.
-
-    Returns:
-        JSON response with uv_index, level, message, location, and
-        recorded_at timestamp.
-
-    Status Codes:
-        200: UV data returned successfully.
-        400: Missing or invalid lat/lon parameters.
-        502: OpenWeatherMap API error.
-        500: Database or server error.
-    """
-    lat_param = request.args.get("lat")
-    lon_param = request.args.get("lon")
-
-    if lat_param is None or lon_param is None:
-        return jsonify({"error": "lat and lon query parameters are required"}), 400
-
-    try:
-        lat = float(lat_param)
-        lon = float(lon_param)
-    except (ValueError, TypeError):
-        return jsonify({"error": "lat and lon must be valid numbers"}), 400
-
-    api_key = current_app.config["OPENWEATHER_API_KEY"]
+@uv_bp.route("/", methods=["GET"])
+def get_uv_forecast():
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+    
     if not api_key:
-        return jsonify({"error": "OpenWeatherMap API key is not configured"}), 500
-
-    # Call OpenWeatherMap One Call API 3.0
+        return jsonify({"error": "Missing OPENWEATHER_API_KEY in backend/.env"}), 500
+    
+    lat = request.args.get('lat', str(MELBOURNE_LAT))
+    lon = request.args.get('lon', str(MELBOURNE_LON))
+    
     try:
-        owm_response = requests.get(
-            "https://api.openweathermap.org/data/3.0/onecall",
-            params={
-                "lat": lat,
-                "lon": lon,
-                "exclude": "minutely,hourly,daily,alerts",
-                "appid": api_key,
-            },
-            timeout=10,
-        )
-
-        if owm_response.status_code != 200:
-            return jsonify({
-                "error": "Failed to fetch UV data from OpenWeatherMap",
-                "details": owm_response.text,
-            }), 502
-
-        data = owm_response.json()
-        uv_index = round(data["current"]["uvi"], 2)
-        location_name = f"{lat}, {lon}"
-
+        # Call 1: Current UV index
+        uvi_url = f"https://api.openweathermap.org/data/2.5/uvi?lat={lat}&lon={lon}&appid={api_key}"
+        uvi_response = requests.get(uvi_url, timeout=15)
+        uvi_response.raise_for_status()
+        uvi_data = uvi_response.json()
+        current_uv = uvi_data.get('value', 0)
+        
+        # Call 2: Weather forecast
+        forecast_url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&units=metric&cnt=8&appid={api_key}"
+        forecast_response = requests.get(forecast_url, timeout=15)
+        forecast_response.raise_for_status()
+        forecast_data = forecast_response.json()
+        forecast_list = forecast_data.get('list', [])
+        
+        hourly_data = []
+        
+        if forecast_list:
+            # First entry: real UV + weather from first forecast
+            first = forecast_list[0]
+            uv = current_uv
+            details = uv_details(uv)
+            timestamp = datetime.fromtimestamp(first['dt'], MELBOURNE_TZ)
+            
+            hourly_data.append({
+                "time": timestamp.strftime("%I:%M %p"),
+                "temp": first['main']['temp'],
+                "uv": uv,
+                "uv_estimated": False,
+                "level": details["level"],
+                "color": details["color"],
+                "warning_sign": details["warning_sign"],
+                "warning_message": details["warning_message"],
+                "clothing": details["recommended_clothing"],
+                "weather": first['weather'][0]['description']
+            })
+            
+            # Remaining entries: forecast weather only, UV unavailable
+            for f in forecast_list[1:]:
+                timestamp = datetime.fromtimestamp(f['dt'], MELBOURNE_TZ)
+                hourly_data.append({
+                    "time": timestamp.strftime("%I:%M %p"),
+                    "temp": f['main']['temp'],
+                    "uv": None,
+                    "uv_estimated": True,
+                    "level": None,
+                    "color": None,
+                    "warning_sign": None,
+                    "warning_message": None,
+                    "clothing": None,
+                    "weather": f['weather'][0]['description']
+                })
+        
+        return jsonify({
+            "city": forecast_data.get("city", {}).get("name", "Melbourne"),
+            "timezone": "Australia/Melbourne",
+            "uv_forecast": hourly_data
+        })
+    
     except requests.RequestException as e:
-        return jsonify({"error": "OpenWeatherMap request failed", "details": str(e)}), 502
-
-    # Get plain-language category
-    category = _get_uv_category(uv_index)
-
-    # Cache in database
-    try:
-        conn = _get_db_connection()
-        _cache_uv_reading(conn, lat, lon, location_name, uv_index)
-        conn.close()
-    except psycopg2.Error:
-        # Caching failure should not block the response
-        pass
-
-    return jsonify({
-        "uv_index": uv_index,
-        "level": category["level"],
-        "message": category["message"],
-        "location": {"lat": lat, "lon": lon, "name": location_name},
-        "recorded_at": datetime.now(timezone.utc).isoformat(),
-    }), 200
+        return jsonify({"error": "External API request failed", "details": str(e)}), 502
+    except Exception as e:
+        return jsonify({"error": "Server error", "details": str(e)}), 500
